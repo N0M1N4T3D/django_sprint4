@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404, redirect
-from django.views.generic import ListView, DetailView 
+from django.views.generic import ListView, DetailView
 from django.views.generic import UpdateView, CreateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
@@ -35,10 +35,10 @@ class IndexView(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return Post.objects.select_related
-    ('category').annotate(comment_count=Count('comments')).filter(
-        is_published=True, category__is_published=True,
-        pub_date__lte=now()).order_by('-pub_date')
+        return Post.objects.select_related('category').annotate(
+            comment_count=Count('comments')).filter(
+            is_published=True, category__is_published=True,
+            pub_date__lte=now()).order_by('-pub_date')
 
 
 class PostDetailView(PostBaseMixin, DetailView):
@@ -85,10 +85,10 @@ class CategoryPostsView(ListView):
     def get_queryset(self):
         category = get_object_or_404(
             Category, is_published=True, slug=self.kwargs['category_slug'])
-        return Post.objects.filter(category=category,
-                                   is_published=True,
-                                   pub_date__lte=now()).order_by
-    ('-pub_date').annotate(comment_count=Count('comments'))
+        return Post.objects.filter(
+            category=category, is_published=True,
+            pub_date__lte=now()).order_by('-pub_date').annotate(
+                comment_count=Count('comments'))
 
 
 class ProfileView(ListView):
@@ -99,9 +99,8 @@ class ProfileView(ListView):
 
     def get_queryset(self):
         user = get_object_or_404(User, username=self.kwargs['username'])
-        return Post.objects.filter(
-            author=user).order_by('-pub_date').annotate(
-                comment_count=Count('comments'))
+        return Post.objects.filter(author=user).order_by(
+            '-pub_date').annotate(comment_count=Count('comments'))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -121,8 +120,7 @@ class EditProfileView(UpdateView):
 
     def get_success_url(self):
         username = self.request.user
-        return reverse('blog:profile',
-                       kwargs={'username': username.username})
+        return reverse('blog:profile', kwargs={'username': username.username})
 
 
 @method_decorator(login_required, name='dispatch')
@@ -139,8 +137,8 @@ class AddCommentView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.author = self.request.user
-        form.instance.post = get_object_or_404(Post,
-                                               id=self.kwargs['post_id'])
+        form.instance.post = get_object_or_404(
+            Post, id=self.kwargs['post_id'])
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -184,8 +182,8 @@ class EditPostView(PostBaseMixin, UpdateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse('blog:post_detail',
-                       args=[self.kwargs[self.pk_url_kwarg]])
+        return reverse('blog:post_detail', args=[
+            self.kwargs[self.pk_url_kwarg]])
 
 
 class DeletePostView(LoginRequiredMixin, PostBaseMixin, DeleteView):

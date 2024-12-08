@@ -12,7 +12,7 @@ class BaseModel(models.Model):
         auto_now_add=True, verbose_name="Добавлено")
 
     class Meta:
-        abstract = True  # Это делает модель абстрактной
+        abstract = True
 
 
 class Category(BaseModel):
@@ -47,20 +47,25 @@ class Post(BaseModel):
     text = models.TextField(verbose_name="Текст")
     pub_date = models.DateTimeField(
         verbose_name="Дата и время публикации",
-        help_text="Если установить дату и время в будущем — можно делать отложенные публикации.",
-        default=timezone.now 
+        help_text="Если установить дату и время в будущем"
+        "— можно делать отложенные публикации.",
+        default=timezone.now
     )
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name="Автор публикации", related_name="posts", null=False
+        User, on_delete=models.CASCADE,
+        verbose_name="Автор публикации", related_name="posts", null=False
     )
     location = models.ForeignKey(
         Location, null=True, blank=True, on_delete=models.SET_NULL,
         verbose_name="Местоположение", related_name="posts"
     )
     category = models.ForeignKey(
-        Category, null=True, on_delete=models.SET_NULL, verbose_name="Категория", related_name="posts"
+        Category, null=True, on_delete=models.SET_NULL,
+        verbose_name="Категория", related_name="posts"
     )
-    image = models.ImageField(upload_to='posts/', null=True, blank=True, verbose_name="Изображение")
+    image = models.ImageField(
+        upload_to='posts/',
+        null=True, blank=True, verbose_name="Изображение")
 
     class Meta:
         verbose_name = "публикация"
@@ -68,16 +73,18 @@ class Post(BaseModel):
 
     def __str__(self):
         return self.title
-    
+
+
 class Comment(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments', null=False) 
+    post = models.ForeignKey(
+        Post, on_delete=models.CASCADE, related_name='comments')
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Комментарий"
-        verbose_name_plural = "Комментарии"
+        verbose_name = "комментарий"
+        verbose_name_plural = "комментарии"
 
     def __str__(self):
-        return f"Комментарий под номером {self.pk}"
+        return f"Комментарий автора {self.author}"
